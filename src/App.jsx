@@ -1,131 +1,87 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import './styles.css'
 
-const starterHabits = [
-  { id: 1, name: 'Morning focus session', area: 'Productivity', target: 5, done: [true, true, false, true, true, false, true] },
-  { id: 2, name: '10 minute reflection', area: 'Mindset', target: 4, done: [true, false, true, true, false, true, false] },
-  { id: 3, name: 'Move your body', area: 'Health', target: 6, done: [true, true, true, false, true, true, false] }
+const initialHabits = [
+  { id: 1, title: 'Morning planning ritual', category: 'Focus', streak: 12, impact: 92, done: [true, true, true, true, false, true, true] },
+  { id: 2, title: 'Evening reflection note', category: 'Mindset', streak: 8, impact: 81, done: [true, false, true, true, true, false, true] },
+  { id: 3, title: 'Workout or long walk', category: 'Health', streak: 5, impact: 76, done: [false, true, true, true, false, true, false] }
+]
+
+const plans = [
+  ['Starter', '$0', '3 habits', 'Weekly tracking', 'Local browser save'],
+  ['Pro', '$9', 'Unlimited habits', 'AI coaching prompts', 'Analytics dashboard'],
+  ['Team', '$29', 'Shared behavior boards', 'Manager insights', 'Priority support']
 ]
 
 export default function App() {
-  const [habits, setHabits] = useState(() => {
-    const saved = localStorage.getItem('behavior-tools-habits')
-    return saved ? JSON.parse(saved) : starterHabits
-  })
-  const [name, setName] = useState('')
-  const [area, setArea] = useState('Productivity')
+  const [habits, setHabits] = useState(() => JSON.parse(localStorage.getItem('bt-saas-habits') || 'null') || initialHabits)
+  const [title, setTitle] = useState('')
+  const [category, setCategory] = useState('Focus')
+  const [view, setView] = useState('dashboard')
 
-  useEffect(() => {
-    localStorage.setItem('behavior-tools-habits', JSON.stringify(habits))
-  }, [habits])
+  useEffect(() => localStorage.setItem('bt-saas-habits', JSON.stringify(habits)), [habits])
 
-  const stats = useMemo(() => {
-    const totalChecks = habits.reduce((sum, habit) => sum + habit.done.filter(Boolean).length, 0)
+  const metrics = useMemo(() => {
+    const completed = habits.reduce((sum, habit) => sum + habit.done.filter(Boolean).length, 0)
     const possible = habits.length * 7 || 1
-    const score = Math.round((totalChecks / possible) * 100)
-    const activeToday = habits.filter((habit) => habit.done[6]).length
-    return { totalChecks, score, activeToday }
+    const consistency = Math.round((completed / possible) * 100)
+    const avgImpact = Math.round(habits.reduce((sum, habit) => sum + habit.impact, 0) / (habits.length || 1))
+    const streaks = habits.reduce((sum, habit) => sum + habit.streak, 0)
+    return { completed, consistency, avgImpact, streaks }
   }, [habits])
 
-  const addHabit = (event) => {
-    event.preventDefault()
-    if (!name.trim()) return
-    setHabits([
-      ...habits,
-      {
-        id: Date.now(),
-        name: name.trim(),
-        area,
-        target: 5,
-        done: [false, false, false, false, false, false, false]
-      }
-    ])
-    setName('')
+  const addHabit = (e) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setHabits([{ id: Date.now(), title: title.trim(), category, streak: 1, impact: 70, done: [false, false, false, false, false, false, false] }, ...habits])
+    setTitle('')
   }
 
-  const toggleDay = (habitId, dayIndex) => {
-    setHabits(habits.map((habit) => {
-      if (habit.id !== habitId) return habit
+  const toggle = (id, index) => {
+    setHabits(habits.map(habit => {
+      if (habit.id !== id) return habit
       const done = [...habit.done]
-      done[dayIndex] = !done[dayIndex]
-      return { ...habit, done }
+      done[index] = !done[index]
+      return { ...habit, done, streak: Math.max(0, habit.streak + (done[index] ? 1 : -1)) }
     }))
   }
 
-  const deleteHabit = (habitId) => {
-    setHabits(habits.filter((habit) => habit.id !== habitId))
-  }
+  const remove = (id) => setHabits(habits.filter(habit => habit.id !== id))
 
   return (
-    <main className="app-shell">
-      <section className="hero">
-        <div>
-          <p className="eyebrow">Behavior Tools</p>
-          <h1>Build better patterns, one week at a time.</h1>
-          <p className="hero-copy">Track habits, review your behavior, and turn small actions into consistent routines.</p>
-        </div>
-        <div className="score-card">
-          <span>Weekly score</span>
-          <strong>{stats.score}%</strong>
-          <p>{stats.totalChecks} completed actions this week</p>
-        </div>
-      </section>
+    <div className="product">
+      <aside className="sidebar">
+        <div className="brand"><span>BT</span><div><strong>Behavior Tools</strong><small>Operating system</small></div></div>
+        {['dashboard', 'habits', 'insights', 'billing'].map(item => <button key={item} onClick={() => setView(item)} className={view === item ? 'nav active' : 'nav'}>{item}</button>)}
+        <div className="upgrade-box"><b>Pro workspace</b><p>Unlock cloud sync, AI reviews, and behavior reports.</p><button>Upgrade</button></div>
+      </aside>
 
-      <section className="stats-grid">
-        <article><span>Active habits</span><strong>{habits.length}</strong></article>
-        <article><span>Done today</span><strong>{stats.activeToday}</strong></article>
-        <article><span>Focus level</span><strong>{stats.score >= 70 ? 'Strong' : stats.score >= 40 ? 'Building' : 'Starting'}</strong></article>
-      </section>
+      <main className="workspace">
+        <header className="topbar"><div><p className="eyebrow">SaaS Dashboard</p><h1>Behavior analytics for better routines.</h1></div><button className="primary">Start free trial</button></header>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <h2>Add a behavior</h2>
-            <p>Create a habit and mark progress across the week.</p>
+        <section className="metric-grid">
+          <article><span>Consistency</span><strong>{metrics.consistency}%</strong><p>weekly completion</p></article>
+          <article><span>Impact score</span><strong>{metrics.avgImpact}</strong><p>habit quality index</p></article>
+          <article><span>Total streaks</span><strong>{metrics.streaks}</strong><p>days compounded</p></article>
+          <article><span>Actions</span><strong>{metrics.completed}</strong><p>logged this week</p></article>
+        </section>
+
+        <section className="content-grid">
+          <div className="card large">
+            <div className="card-head"><div><h2>Behavior board</h2><p>Click any day to update progress.</p></div></div>
+            {habits.map(habit => <div className="habit-row" key={habit.id}><div><b>{habit.title}</b><span>{habit.category} · {habit.streak} day streak</span></div><div className="days">{['M','T','W','T','F','S','S'].map((d,i)=><button key={i} onClick={() => toggle(habit.id, i)} className={habit.done[i] ? 'dot on' : 'dot'}>{d}</button>)}</div><button className="remove" onClick={() => remove(habit.id)}>×</button></div>)}
           </div>
-        </div>
-        <form className="habit-form" onSubmit={addHabit}>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Example: Drink water before coffee" />
-          <select value={area} onChange={(e) => setArea(e.target.value)}>
-            <option>Productivity</option>
-            <option>Health</option>
-            <option>Mindset</option>
-            <option>Relationships</option>
-            <option>Learning</option>
-          </select>
-          <button type="submit">Add habit</button>
-        </form>
-      </section>
 
-      <section className="habits-list">
-        {habits.map((habit) => {
-          const complete = habit.done.filter(Boolean).length
-          return (
-            <article className="habit-card" key={habit.id}>
-              <div className="habit-top">
-                <div>
-                  <span className="tag">{habit.area}</span>
-                  <h3>{habit.name}</h3>
-                  <p>{complete}/7 days completed</p>
-                </div>
-                <button className="ghost" onClick={() => deleteHabit(habit.id)}>Remove</button>
-              </div>
-              <div className="week-row">
-                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                  <button
-                    key={`${habit.id}-${day}-${index}`}
-                    className={habit.done[index] ? 'day done' : 'day'}
-                    onClick={() => toggleDay(habit.id, index)}
-                    aria-label={`Toggle ${day}`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </article>
-          )
-        })}
-      </section>
-    </main>
+          <div className="card">
+            <h2>Add behavior</h2>
+            <form onSubmit={addHabit} className="stacked-form"><input value={title} onChange={e => setTitle(e.target.value)} placeholder="New behavior" /><select value={category} onChange={e => setCategory(e.target.value)}><option>Focus</option><option>Health</option><option>Mindset</option><option>Sales</option><option>Learning</option></select><button className="primary">Create</button></form>
+          </div>
+        </section>
+
+        <section className="pricing">
+          {plans.map(plan => <article key={plan[0]} className="price-card"><h3>{plan[0]}</h3><strong>{plan[1]}<small>/mo</small></strong>{plan.slice(2).map(feature => <p key={feature}>✓ {feature}</p>)}<button>{plan[0] === 'Pro' ? 'Choose Pro' : 'Select'}</button></article>)}
+        </section>
+      </main>
+    </div>
   )
 }
