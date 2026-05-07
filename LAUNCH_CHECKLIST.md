@@ -8,7 +8,8 @@
 ## 2. Env Variables
 - Add VITE_SUPABASE_URL
 - Add VITE_SUPABASE_ANON_KEY
-- Add OPENAI_API_KEY (optional)
+- Add OPENAI_API_KEY
+- Add OPENAI_MODEL (optional; defaults to gpt-5.4-mini)
 
 ## 3. Deploy
 - Go to Vercel
@@ -19,6 +20,7 @@
 ## 4. Test
 - Sign in with an email
 - Add habits
+- Generate an AI coaching review
 - Refresh (data persists)
 
 ## 5. Optional
