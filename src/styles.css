@@ -17,6 +17,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -330,6 +335,15 @@ button {
   padding: 16px;
   background: #f6f8fb;
   border-radius: 6px;
+}
+
+.inline-error {
+  padding: 10px 12px;
+  background: #fff1ee;
+  border: 1px solid #f3b5aa;
+  border-radius: 6px;
+  color: #8c2f21;
+  font-size: 14px;
 }
 
 .pricing {
