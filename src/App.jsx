@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { generateCoachNote } from './api/coach'
 import { createHabit, deleteHabit, fetchHabits, updateHabit } from './api/habits'
 import { isSupabaseConfigured } from './lib/supabase'
 import './styles.css'
@@ -46,6 +47,9 @@ export default function App() {
   const [category, setCategory] = useState('Focus')
   const [view, setView] = useState('dashboard')
   const [isLoading, setIsLoading] = useState(false)
+  const [coachNote, setCoachNote] = useState('')
+  const [coachError, setCoachError] = useState('')
+  const [isCoachLoading, setIsCoachLoading] = useState(false)
   const [syncStatus, setSyncStatus] = useState(isSupabaseConfigured ? 'Supabase ready' : 'Demo mode: saved in this browser')
 
   useEffect(() => localStorage.setItem('bt-user', JSON.stringify(user)), [user])
@@ -149,6 +153,21 @@ export default function App() {
     }
   }
 
+  const generateWeeklyReview = async () => {
+    setCoachError('')
+    setIsCoachLoading(true)
+
+    try {
+      const note = await generateCoachNote({ habits, metrics })
+      setCoachNote(note)
+    } catch (error) {
+      setCoachError(error.message)
+      setCoachNote(makeCoachNote(habits))
+    } finally {
+      setIsCoachLoading(false)
+    }
+  }
+
   const signIn = (e) => {
     e.preventDefault()
     if (!email.trim()) return
@@ -180,7 +199,7 @@ export default function App() {
         <section className="content-grid">
           <div className="card large"><div className="card-head"><div><h2>Behavior board</h2><p>{isLoading ? 'Loading your saved habits...' : 'Track weekly completion and keep the board synced.'}</p></div></div>{!isLoading && habits.length === 0 && <p className="empty-state">No habits yet. Add one to start tracking.</p>}{habits.map(habit => <div className="habit-row" key={habit.id}><div><b>{habit.title}</b><span>{habit.category} / {habit.streak} day streak</span></div><div className="days">{['M','T','W','T','F','S','S'].map((d,i)=><button key={i} onClick={() => toggle(habit.id, i)} className={habit.done[i] ? 'dot on' : 'dot'}>{d}</button>)}</div><button aria-label={`Remove ${habit.title}`} className="remove" onClick={() => remove(habit.id)}>x</button></div>)}</div>
           <div className="card"><h2>Add behavior</h2><form onSubmit={addHabit} className="stacked-form"><input value={title} onChange={e => setTitle(e.target.value)} placeholder="New behavior" /><select value={category} onChange={e => setCategory(e.target.value)}><option>Focus</option><option>Health</option><option>Mindset</option><option>Sales</option><option>Learning</option></select><button className="primary">Create</button></form></div>
-          <div className="card ai-card"><h2>AI coach</h2><p>{makeCoachNote(habits)}</p><button className="primary">Generate weekly review</button></div>
+          <div className="card ai-card"><h2>AI coach</h2><p>{coachNote || makeCoachNote(habits)}</p>{coachError && <p className="inline-error">{coachError}</p>}<button className="primary" onClick={generateWeeklyReview} disabled={isCoachLoading}>{isCoachLoading ? 'Generating...' : 'Generate weekly review'}</button></div>
         </section>
 
         {view === 'billing' && <section className="pricing">{plans.map(plan => <article key={plan[0]} className="price-card"><h3>{plan[0]}</h3><strong>{plan[1]}<small>/mo</small></strong>{plan.slice(2).map(feature => <p key={feature}>- {feature}</p>)}<button>{plan[0] === 'Pro' ? 'Choose Pro' : 'Select'}</button></article>)}</section>}
