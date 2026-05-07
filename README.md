@@ -12,7 +12,7 @@
 - Supabase-backed habit persistence when env vars are configured
 - Local browser fallback when Supabase keys are missing
 - SaaS dashboard UI
-- AI coaching scaffold
+- OpenAI-powered weekly coaching notes through a Vercel serverless function
 
 ## Deploy
 1. Import `luismartos1029-creator/luis` into Vercel
@@ -22,11 +22,14 @@
 5. Add environment variables:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `OPENAI_API_KEY`
+   - `OPENAI_MODEL` (optional; defaults to `gpt-5.4-mini`)
 6. Deploy
 
 ## Test
 - Sign in with an email
 - Add a habit
+- Generate an AI coaching review
 - Refresh the page
 - Confirm the habit persists
 
