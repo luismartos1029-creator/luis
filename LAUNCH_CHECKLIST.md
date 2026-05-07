@@ -1,9 +1,9 @@
-# 🚀 Launch Checklist
+# Launch Checklist
 
 ## 1. Backend
 - Create Supabase project
 - Run supabase.sql
-- Enable auth (email magic link)
+- Keep demo sign-in for first deployment, or enable Supabase Auth when ready
 
 ## 2. Env Variables
 - Add VITE_SUPABASE_URL
@@ -17,7 +17,7 @@
 - Deploy
 
 ## 4. Test
-- Create account
+- Sign in with an email
 - Add habits
 - Refresh (data persists)
 
